@@ -5,7 +5,7 @@ from torch import Tensor
 from torch import nn
 import math
 
-
+#RMSNorm
 class RMSNorm(nn.Module):
     def __init__(self,d_model: int, W: torch.Tensor, eps: float = 1e-5, device=None, dtype=None):
         super().__init__()
