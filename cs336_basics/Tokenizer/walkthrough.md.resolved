@@ -1,0 +1,41 @@
+# Walkthrough - Tokenizer Fixes
+
+I have successfully fixed the `AttributeError` and several logical bugs in the [Tokenizer](file:///Users/xiaolin/CS336_Learning/assignment1-basics/cs336_basics/Tokenizer/tokenizer.py#10-128) class, ensuring it passes all tests in [tests/test_tokenizer.py](file:///Users/xiaolin/CS336_Learning/assignment1-basics/tests/test_tokenizer.py).
+
+## Changes
+
+### 1. Fix `KeyError` in Tokenizer Initialization
+The `token_to_id` and `id_to_token` mappings were swapped in [__init__](file:///Users/xiaolin/CS336_Learning/assignment1-basics/cs336_basics/Tokenizer/tokenizer.py#11-19).
+```python
+-        self.id_to_token = {id:token for token,id in vocab.items()}
+-        self.token_to_id = {token:id for token,id in vocab.items()}
++        self.id_to_token = vocab
++        self.token_to_id = {v: k for k, v in vocab.items()}
+```
+
+### 2. Fix `TypeError` in [get_pbe_merges](file:///Users/xiaolin/CS336_Learning/assignment1-basics/cs336_basics/Tokenizer/tokenizer.py#65-87)
+Two issues were fixed:
+- `bytes[b]` raises TypeError; changed to `bytes([b])`.
+- `return symbols` was indented inside the loop, preventing iteration; unindented it.
+
+### 3. Restore `Tokenizer.from_files`
+The [from_files](file:///Users/xiaolin/CS336_Learning/assignment1-basics/cs336_basics/Tokenizer/tokenizer.py#20-47) method was missing (causing the original `AttributeError`) and there was a partial/broken duplicate. I implemented a robust [from_files](file:///Users/xiaolin/CS336_Learning/assignment1-basics/cs336_basics/Tokenizer/tokenizer.py#20-47) method and removed the duplicate.
+
+### 4. Fix Special Token Encoding
+The `regex.split` pattern was not capturing separators (special tokens), causing them to be lost. I wrapped the pattern in a capturing group.
+```python
+-        special_tokens_pattern = '|'.join(map(regex.escape, sorted_special_tokens))
++        special_tokens_pattern = '(' + '|'.join(map(regex.escape, sorted_special_tokens)) + ')'
+```
+
+## Verification Results
+
+### Automated Tests
+Ran `uv run pytest tests/test_tokenizer.py` and all tests passed.
+
+```
+tests/test_tokenizer.py::test_roundtrip_empty PASSED
+...
+tests/test_tokenizer.py::test_encode_iterable_tinystories_matches_tiktoken PASSED
+======================== 23 passed, 2 skipped in 1.50s =========================
+```
